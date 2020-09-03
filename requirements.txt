@@ -1,0 +1,5 @@
+# todo: add versions
+python=3
+numpy
+matplotlib
+pathlib

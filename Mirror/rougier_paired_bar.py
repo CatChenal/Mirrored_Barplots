@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from pathlib import Path
@@ -366,3 +365,52 @@ rougier_data = dict(diseases=["Kidney Cancer", "Bladder Cancer", "Esophageal Can
                     year=2007,
                     notes = ('DEATHS', 'NEW CASES')
                    )
+
+def rougier_example(caption_side=0,
+                    save_fig=False,
+                    save_as=None):
+    """
+    Wrapper for rougier.plot_paired_categories()
+    """
+    
+    # Data to be represented: cancer data from 2007
+    data = rougier_data
+    #pp(data)
+
+    # Inputs preparation:
+    # -----------------------------------------------------
+    W = (data['women_deaths'], data['women_cases'])
+    M = (data['men_deaths'], data['men_cases'])
+
+    xt_pos = data['xt_pos']
+    xt_lbls = data['xt_lbls']
+    yr = data['year']
+    notes = data['notes']
+
+    # Caption:
+    cases = np.round((np.sum(W[1]) + np.sum(M[1]))/1_000_000, 1)
+    caption_hdr = 'Leading Causes\nOf Cancer Deaths'
+    caption_txt = 'In {:d}, there were more\nthan {:.1f} million'.format(yr, cases)
+    caption_txt += ' new cases\nof cancer in the USA.'
+    
+    if caption_side == 0:
+        caption_args = {} # use defaults
+    else:
+        caption_args = {'y_pos_pct': 0.4, 'x_pos_offset':55_000}
+
+    fig_style = {'figsize':(14,7), 'facecolor':None}
+
+    plot_paired_categories(data['diseases'],
+                           W, M,
+                           xt_pos, xt_lbls,
+                           face_cols=['red','blue'],
+                           equal_lims=True,
+                           y_lbl_ofs=0.5,
+                           pair_labels=notes,
+                           annotate_side='both',
+                           caption_ax=caption_side,
+                           caption=[caption_hdr, caption_txt],
+                           caption_kwargs=caption_args,
+                           fig_style=fig_style,
+                           save_as=save_as,
+                           save_fig=save_fig)

@@ -1,14 +1,17 @@
 __doc__ = """
-Output a bar plot of two paired-series mirrored around
-x = 0 (orient='horizontal, default or y = 0 (orient='vertical').
+Output a bar plot of two paired-series mirrored around x = 0 
+(orient='horizontal, default), or y = 0 (orient='vertical').
 """
+__all__ = ['mirrored_barplot',
+           'sample_data',
+           'validate_series']
 
 import numpy as np
 import matplotlib.pyplot as plt
 from functools import partial
 
 
-def mirrorbar_despine(ax, orient='horizontal'):
+def _mirrorbar_despine(ax, orient='horizontal'):
     sp = ['left', 'top', 'right', 'bottom']
     
     orient = orient.lower()[0]
@@ -20,11 +23,11 @@ def mirrorbar_despine(ax, orient='horizontal'):
         ax.spines[s].set_visible(False)
         
 
-def mirrored_bar_add_labels(ax, y1, y2,
-                            bar_params,
-                            orient='horizontal',
-                            txt_color=['#ff6347','#74b088'],
-                            round_to=2):
+def _mirrored_bar_add_labels(ax, y1, y2,
+                             bar_params,
+                             orient='horizontal',
+                             txt_color=['#ff6347','#74b088'],
+                             round_to=2):
     
     font_style = {'fontweight':'bold'}
     
@@ -56,18 +59,15 @@ def mirrored_bar_add_labels(ax, y1, y2,
                     va=va,
                     **font_style)
 
-# TODO: retrieve seaborn_args: extra args to seaborn plot not found in plt
-def add_mirrored_bars(ax, M, S1, S2,
-                      bw,
-                      fc, ec,
-                      alpha,
-                      series_labels,
-                      axis_label,
-                      orient,
-                      round_to,
-                      label_bars
-                      #use_seaborn=False,seaborn_args=None
-                     ):
+def _add_mirrored_bars(ax, M, S1, S2,
+                       bw,
+                       fc, ec,
+                       alpha,
+                       series_labels,
+                       axis_label,
+                       orient,
+                       round_to,
+                       label_bars):
     offset = 0.02
     bar_params = {'h': {0:{'b':None,
                            'ofs':-offset,
@@ -88,15 +88,7 @@ def add_mirrored_bars(ax, M, S1, S2,
                  }
     o = orient.lower()[0]
     b = ax.bar if o == 'h' else ax.barh
-    '''
-    if not use_seaborn:
-        b = ax.bar if o == 'h' else ax.barh
-    else:
-        if o == 'h':
-            b = partial(sns.barplot, {'ax':ax})
-        else:
-            b = partial(sns.barplot, {'ax':ax, 'orient':'h'})
-    '''
+    
     for i in range(2):
         S = -S1 if i == 0 else S2
             
@@ -108,26 +100,25 @@ def add_mirrored_bars(ax, M, S1, S2,
                                   alpha=alpha,
                                   align='center'
                                  )
-    #ax.figure.canvas.draw()
     
     if o == 'h':
-        #ax.autoscale_view(tight=True, scalex=False, scaley=True)
+        ax.autoscale_view(tight=True, scalex=False, scaley=True)
         ax.yaxis.set_major_formatter('{x:.1f}')
         ax.set(xticks=[], ylabel=axis_label)
 
     else:
-        #ax.autoscale_view(tight=True, scalex=True, scaley=False)
+        ax.autoscale_view(tight=True, scalex=True, scaley=False)
         ax.xaxis.set_major_formatter('{x:.1f}')
         ax.set(yticks=[], xlabel=axis_label)
     
     ax.figure.canvas.draw()
         
     if label_bars:
-        mirrored_bar_add_labels(ax, S1, S2,
-                                bar_params,
-                                orient=orient,
-                                txt_color=fc,
-                                round_to=round_to)
+        _mirrored_bar_add_labels(ax, S1, S2,
+                                 bar_params,
+                                 orient=orient,
+                                 txt_color=fc,
+                                 round_to=round_to)
     
     return ax
     
@@ -146,8 +137,8 @@ def validate_series(s1, s2, max_ratio=15):
     else:
         ratio = rng1//rng2
     if ratio >= max_ratio:
-        msg = F'The series ranges differ by at least {max_ratio}X: '
-        msg += 'the visualization may not be optimal.'
+        msg = F'The series ranges differ by at least {max_ratio}X.'
+        msg += ' A mirrored_barplot vis may not be optimal.'
         print(msg)
             
         
@@ -164,9 +155,7 @@ def mirrored_barplot(ax, M, S1, S2,
                      label_bars=False,
                      tc=['#ff6347','#74b088'],
                      round_to=2,
-                     style='seaborn',
-                     #use_seaborn=False, seaborn_args=None
-                    ):
+                     style='seaborn'):
     """Bar plot two paired series reflected around a y=0 or x=0 line.
        Note: The two series values are assumed to have the same order of magnitude.
        Inputs:
@@ -206,19 +195,17 @@ def mirrored_barplot(ax, M, S1, S2,
         raise ValueError("orient not in ['h', 'horizontal', 'v', 'vertical'].")
         
     with plt.style.context(style=style):
-        ax = add_mirrored_bars(ax, M, S1, S2,
-                               bw=bw,
-                               fc=fc, ec=ec,
-                               alpha=alpha, 
-                               series_labels=series_labels,
-                               axis_label=axis_label,
-                               orient=orient,
-                               round_to=round_to,
-                               label_bars=label_bars
-                               #use_seaborn=False, seaborn_args=None
-                              )
+        ax = _add_mirrored_bars(ax, M, S1, S2,
+                                bw=bw,
+                                fc=fc, ec=ec,
+                                alpha=alpha, 
+                                series_labels=series_labels,
+                                axis_label=axis_label,
+                                orient=orient,
+                                round_to=round_to,
+                                label_bars=label_bars)
         
-        mirrorbar_despine(ax, orient=orient)
+        _mirrorbar_despine(ax, orient=orient)
         
         legend_cols = 2
         
@@ -250,6 +237,7 @@ def mirrored_barplot(ax, M, S1, S2,
 def sample_data(n=10, seed=None, fixed=1, y2_factor=4):
     '''
     :fixed=1: hard coded series, else random.
+    :y2_factor: to obtain the second series with a different range.
     '''
     if fixed:
         x = np.arange(10)

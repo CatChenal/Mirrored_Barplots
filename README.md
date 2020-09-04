@@ -22,7 +22,7 @@ __This my functional implementation of the original [Rougier plot](https://journ
 See this [notebook](./notebooks/Mirrored_Barplots.ipynb) in the notebooks folder.
 ---
 # TODO:  
- [ ] Redo caption placement for mpl_bachelors_caption_left.png
+ [x] Redo caption placement for mpl_bachelors_caption_left.png
  [ ] add test mdl  
  [ ] pypi package  
  [ ] conda package  
